@@ -1,18 +1,23 @@
+const token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzkzOTUyYmYyMDE4YzAwMTU5MDc0ZmQiLCJpYXQiOjE3Mzc3MzI4ODMsImV4cCI6MTczODk0MjQ4M30.X3Vkxhbmko1QWAv6YFk4AS6aLD9t8XowHNcDZ3y5-6A"; // Token da inserire
+console.log("Token:", token);  // Log per verificare che il token sia corretto
 
+// Funzione per recuperare i prodotti dal server e visualizzarli
 function fetchProducts() {
-    fetch("https://striveschool-api.herokuapp.com/api/product", {
+    fetch("http://localhost:5000/api/product", {  // URL modificato al server proxy locale
         method: "GET",
         headers: {
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzkzOTUyYmYyMDE4YzAwMTU5MDc0ZmQiLCJpYXQiOjE3Mzc3MzI4ODMsImV4cCI6MTczODk0MjQ4M30.X3Vkxhbmko1QWAv6YFk4AS6aLD9t8XowHNcDZ3y5-6A"
-            }
+            "Authorization": token
+        }
     })
     .then(response => {
+        console.log("Token inviato:", token);  // Log del token inviato con la richiesta
         if (!response.ok) {
             throw new Error("Errore nella richiesta: " + response.statusText);
         }
         return response.json();
     })
     .then(data => {
+        console.log("Prodotti ricevuti:", data); // Log dei prodotti ricevuti
         const productList = document.getElementById("product-list");
         productList.innerHTML = "";  
         data.forEach(product => {
@@ -25,6 +30,7 @@ function fetchProducts() {
     });
 }
 
+// Funzione per creare una card di prodotto
 function createProductCard(product) {
     const col = document.createElement("div");
     col.classList.add("col-12", "col-md-4");
@@ -78,7 +84,7 @@ function createProductCard(product) {
     return col;
 }
 
-
+// Funzione per pre-compilare il form con i dati del prodotto selezionato
 function fillFormWithProduct(product) {
     document.getElementById("productName").value = product.name;
     document.getElementById("productDescription").value = product.description;
@@ -93,8 +99,9 @@ function fillFormWithProduct(product) {
     };
 }
 
+// Funzione per creare un nuovo prodotto
 function createProduct(event) {
-    event.preventDefault();
+    event.preventDefault();  // Impedisce il comportamento di default (invio del form)
 
     const newProduct = {
         name: document.getElementById("productName").value,
@@ -104,25 +111,33 @@ function createProduct(event) {
         price: document.getElementById("productPrice").value
     };
 
-    fetch("https://striveschool-api.herokuapp.com/api/product", {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(newProduct)
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log("Prodotto creato:", data);
-        fetchProducts(); 
-    })
-    .catch(error => {
-        console.error("Errore nella creazione del prodotto:", error);
-    });
+    // Log dei dati del prodotto
+    console.log("Dati del prodotto:", newProduct);
+
+    if (newProduct.name && newProduct.description && newProduct.brand && newProduct.imageUrl && newProduct.price) {
+        fetch("http://localhost:5000/api/product", {  // URL modificato al server proxy locale
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(newProduct)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Prodotto creato:", data);
+            fetchProducts();  // Ricarica la lista dei prodotti
+            clearForm();      // Pulisce il form dopo l'invio
+        })
+        .catch(error => {
+            console.error("Errore nella creazione del prodotto:", error);
+        });
+    } else {
+        alert("Compila tutti i campi del form.");
+    }
 }
 
-
+// Funzione per aggiornare un prodotto esistente
 function updateProduct(productId) {
     const updatedProduct = {
         name: document.getElementById("productName").value,
@@ -132,10 +147,10 @@ function updateProduct(productId) {
         price: document.getElementById("productPrice").value
     };
 
-    fetch(`https://striveschool-api.herokuapp.com/api/product/${productId}`, {
+    fetch(`http://localhost:5000/api/product/${productId}`, {  // URL modificato al server proxy locale
         method: "PUT",
         headers: {
-            "Authorization": `Bearer ${token}`,
+            "Authorization": token,
             "Content-Type": "application/json"
         },
         body: JSON.stringify(updatedProduct)
@@ -144,17 +159,19 @@ function updateProduct(productId) {
     .then(data => {
         console.log("Prodotto aggiornato:", data);
         fetchProducts(); 
+        clearForm(); // Pulisce il form dopo l'aggiornamento
     })
     .catch(error => {
         console.error("Errore nell'aggiornamento del prodotto:", error);
     });
 }
 
+// Funzione per eliminare un prodotto
 function deleteProduct(productId) {
-    fetch(`https://striveschool-api.herokuapp.com/api/product/${productId}`, {
+    fetch(`http://localhost:5000/api/product/${productId}`, {  // URL modificato al server proxy locale
         method: "DELETE",
         headers: {
-            "Authorization": `Bearer ${token}`
+            "Authorization": token
         }
     })
     .then(response => {
@@ -170,8 +187,16 @@ function deleteProduct(productId) {
     });
 }
 
-document.getElementById("product-form").onsubmit = createProduct;
+// Funzione per pulire il form
+function clearForm() {
+    document.getElementById("productName").value = '';
+    document.getElementById("productDescription").value = '';
+    document.getElementById("productBrand").value = '';
+    document.getElementById("productImageUrl").value = '';
+    document.getElementById("productPrice").value = '';
+}
 
+// Carica i prodotti dal server quando la pagina è pronta
 document.addEventListener("DOMContentLoaded", function() {
     fetchProducts(); 
 });

@@ -1,0 +1,28 @@
+/* Stile personalizzato */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+}
+
+header {
+    background: linear-gradient(to right, #007bff, #0056b3);
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+footer {
+    background: linear-gradient(to right, #343a40, #212529);
+}
+
+.nav-link:hover {
+    color: #ffc107 !important;
+}
+
+#prodotti h2 {
+    color: #007bff;
+    font-size: 2rem;
+    font-weight: bold;
+}
